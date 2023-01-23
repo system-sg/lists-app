@@ -1,0 +1,81 @@
+<script type="text/javascript">
+  google.script.run.withSuccessHandler(return_url).get_url();
+google.script.url.getLocation(function(location) {
+  NAME = location.parameter.name;
+  EMAIL = location.parameter.email;
+});
+
+$(".qa-list dd").hide();
+$(".qa-list dl").on("click", function(e){
+    $('dd',this).slideToggle('fast');
+    if($(this).hasClass('open')){
+        $(this).removeClass('open');
+    }else{
+        $(this).addClass('open');
+    }
+});
+
+function return_url(list){
+  TOP_URL = JSON.parse(list);
+}
+
+function post_index(){
+  let form = document.createElement('form');
+  let request = document.createElement('input');
+  let url = `${TOP_URL}?name=${NAME}&email=${EMAIL}&p=index`
+  form.method = 'POST';
+  form.action = url;
+  request.type = 'hidden'; //入力フォームが表示されないように
+  request.name = 'text';
+  request.value = "";
+  form.appendChild(request);
+  document.body.appendChild(form);
+  form.submit();
+}
+
+function post_inquiry(){
+  let form = document.createElement('form');
+  let request = document.createElement('input');
+  let url = `${TOP_URL}?name=${NAME}&email=${EMAIL}&p=inquiry`
+  form.method = 'POST';
+  form.action = url;
+  request.type = 'hidden'; //入力フォームが表示されないように
+  request.name = 'text';
+  request.value = "";
+  form.appendChild(request);
+  document.body.appendChild(form);
+  form.submit();
+}
+
+function push_btn(){
+  swal(`送信しますか？`, {
+    buttons: {
+      cancel: "いいえ",
+      catch: {
+        text: "はい",
+        value: "catch",
+      }
+    }
+  })
+  .then((value) => {
+    switch (value) {
+      case "cancel":
+        break;
+  
+      case "catch":
+        let contents = document.getElementById("contents").value
+        let message = "";
+        message += `【リストwebアプリ質問】\n`;
+        message += `氏名：${NAME}\n`;
+        message += `メールアドレス：${EMAIL}\n`;
+        message += `内容：${contents}`;
+        google.script.run.withSuccessHandler(onSended).sendTalkNote(message);
+    }
+  });
+}
+
+function onSended(){
+  document.getElementById("contents").value = "";
+  swal("完了");
+}
+</script>

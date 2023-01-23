@@ -1,0 +1,293 @@
+<style>
+  /*============フッター========================*/
+  footer {
+    border-top: solid 1px lightgray;
+    margin-top: 20px;
+  }
+
+  footer p {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .Form {
+    margin-top: 80px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 60%;
+  }
+
+  @media screen and (max-width: 480px) {
+    .Form {
+      margin-top: 40px;
+    }
+  }
+
+  .Form-Item {
+    border-top: 1px solid #ddd;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  @media screen and (max-width: 480px) {
+    .Form-Item {
+      padding-left: 14px;
+      padding-right: 14px;
+      padding-top: 16px;
+      padding-bottom: 16px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .Form-Item:nth-child(5) {
+    border-bottom: 1px solid #ddd;
+  }
+
+  .Form-Item-Label {
+    width: 100%;
+    max-width: 248px;
+    letter-spacing: 0.05em;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  @media screen and (max-width: 480px) {
+    .Form-Item-Label {
+      max-width: inherit;
+      display: flex;
+      align-items: center;
+      font-size: 15px;
+    }
+  }
+
+  .Form-Item-Label.isMsg {
+    margin-top: 8px;
+    margin-bottom: auto;
+  }
+
+  @media screen and (max-width: 480px) {
+    .Form-Item-Label.isMsg {
+      margin-top: 0;
+    }
+  }
+
+  .Form-Item-Label-Required {
+    border-radius: 6px;
+    margin-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    width: 48px;
+    display: inline-block;
+    text-align: center;
+    background: #5bc8ac;
+    color: #fff;
+    font-size: 14px;
+  }
+
+  @media screen and (max-width: 480px) {
+    .Form-Item-Label-Required {
+      border-radius: 4px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      width: 32px;
+      font-size: 10px;
+    }
+  }
+
+  .Form-Item-Input {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-left: 40px;
+    padding-left: 1em;
+    padding-right: 1em;
+    height: 48px;
+    flex: 1;
+    width: 100%;
+    max-width: 410px;
+    background: #eaedf2;
+    font-size: 18px;
+  }
+
+  @media screen and (max-width: 480px) {
+    .Form-Item-Input {
+      margin-left: 0;
+      margin-top: 18px;
+      height: 40px;
+      flex: inherit;
+      font-size: 15px;
+    }
+  }
+
+  .Form-Item-Textarea {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-left: 40px;
+    padding-left: 1em;
+    padding-right: 1em;
+    height: 216px;
+    flex: 1;
+    width: 100%;
+    max-width: 80%;
+    background: #eaedf2;
+    font-size: 18px;
+  }
+
+  @media screen and (max-width: 480px) {
+    .Form-Item-Textarea {
+      margin-top: 18px;
+      margin-left: 0;
+      height: 200px;
+      flex: inherit;
+      font-size: 15px;
+    }
+  }
+
+  .Form-Btn {
+    border-radius: 6px;
+    margin-top: 32px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 280px;
+    display: block;
+    letter-spacing: 0.05em;
+    background: #5bc8ac;
+    color: #fff;
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  @media screen and (max-width: 480px) {
+    .Form-Btn {
+      margin-top: 24px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      width: 160px;
+      font-size: 16px;
+    }
+  }
+
+  /* 質問内容 */
+  .qa-list dl {
+    position: relative;
+    margin: 30px auto auto;
+    cursor: pointer;
+    border: 1px solid #DDD;
+    width: 60%;
+  }
+
+  .qa-list dl:first-child {
+    margin-top: 80px;
+  }
+
+  .qa-list dl::after {
+    position: absolute;
+    top: 27px;
+    right: 26px;
+    display: block;
+    width: 7px;
+    height: 7px;
+    margin: auto;
+    content: '';
+    transform: rotate(135deg);
+    border-top: 2px solid #000;
+    border-right: 2px solid #000;
+  }
+
+  .qa-list .open::after {
+    transform: rotate(-45deg);
+  }
+
+  .qa-list dl dt {
+    position: relative;
+    margin: 0;
+    padding: 20px 20px 20px 60px;
+    font-weight: bold;
+    background: #EEEEEE;
+  }
+
+  .qa-list dl dt::before {
+    font-size: 22px;
+    line-height: 1;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: block;
+    content: 'Q.';
+    color: #5bc8ac;
+  }
+
+  .qa-list dl dd::before {
+    font-size: 22px;
+    line-height: 1;
+    position: absolute;
+    left: 20px;
+    display: block;
+    content: 'A.';
+    font-weight: bold;
+    color: #FF6666;
+  }
+
+  .qa-list dl dd {
+    position: relative;
+    margin: 0;
+    padding: 20px 20px 20px 60px;
+  }
+
+  .qa-list dl dd p {
+    margin: 30px 0 0;
+  }
+
+  .qa-list dl dd p:first-child {
+    margin-top: 0;
+  }
+
+  @media screen and (max-width: 767px) {
+    .qa-list dl {
+      margin: 10px 0 0;
+    }
+
+    .qa-list dl:after {
+      top: 20px;
+      right: 20px;
+      width: 7px;
+      height: 7px;
+    }
+
+    .qa-list dl dt {
+      padding: 16px 16px 16px 50px;
+      font-size: 14px;
+    }
+
+    .qa-list dl dt::before {
+      font-size: 14px;
+      top: 20px;
+      left: 20px;
+    }
+
+    .qa-list dl dd::before {
+      font-size: 14px;
+      left: 20px;
+      margin-top: 5px;
+    }
+
+    .qa-list dl dd {
+      margin: 0;
+      padding: 16px 16px 16px 50px;
+      font-size: 14px;
+    }
+
+    .qa-list dl dd p {
+      margin: 30px 0 0;
+    }
+
+    .qa-list dl dd p:first-child {
+      margin-top: 0;
+    }
+  }
+</style>

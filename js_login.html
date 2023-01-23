@@ -1,0 +1,65 @@
+<script type="text/javascript">
+google.script.run.withSuccessHandler(return_data).get_sheet_account();
+google.script.run.withSuccessHandler(return_url).get_url_signup();
+
+function return_data(list){
+  SHEET_ACCOUNT = JSON.parse(list);
+}
+
+function return_url(list){
+  urls = JSON.parse(list)
+  INDEX_URL = urls[0];
+  SIGN_UP_URL = urls[1];
+}
+
+function post_signup(){
+  let form = document.createElement('form');
+  let request = document.createElement('input');
+  form.method = 'POST';
+  form.action = SIGN_UP_URL;
+  request.type = 'hidden'; //入力フォームが表示されないように
+  request.name = 'text';
+  request.value = "";
+  form.appendChild(request);
+  document.body.appendChild(form);
+  form.submit();
+}
+
+/*--------------チェンジ系-------------------*/
+function login_check(){
+  //現在選択されてる分類を取得
+  let mailaddress = document.getElementById("mailaddress").value
+  let password = document.getElementById("password").value
+  // 分類を元にキノコの種類をリビルド
+  if(mailaddress == "" | password == ""){
+    swal("メールアドレス・パスワード入力してね")
+  }else{
+    // データを取得する
+    let account_name = "";
+    let permission_flag = "";
+    for(let acount of SHEET_ACCOUNT){//名前とパスワードがあっていればtrue、あってなければfalseを返す
+      if(acount[0] == mailaddress && acount[1] == password){
+        account_name = acount[2];
+        permission_flag = acount[3];
+        break;
+      }
+    }
+    if(account_name){
+      notie.alert({ type: 1, text: 'ログイン中',time: 1});
+      let form = document.createElement('form');
+      let request = document.createElement('input');
+      let url = `${INDEX_URL}?name=${account_name}&email=${mailaddress}&autho=${permission_flag}&p=index`
+      form.method = 'POST';
+      form.action = url;
+      request.type = 'hidden'; //入力フォームが表示されないように
+      request.name = 'text';
+      request.value = "";
+      form.appendChild(request);
+      document.body.appendChild(form);
+      form.submit();
+    }else {
+      swal("メールアドレス・パスワード一致しないよ。")
+    }
+  }
+}
+</script>

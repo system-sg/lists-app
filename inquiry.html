@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+  <!--JS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <base target="_top">
+  <!-- sweet alert -->
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <?!= HtmlService.createHtmlOutputFromFile('css_inquiry').getContent(); ?>
+</head>
+
+<body>
+  <!--　▼ ナビゲーション　 -->
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        <a class="navbar-brand" href="javascript:void(0)">SUNGROVE</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="javascript:void(0)" onclick="post_index()">DBリスト配布</a></li>
+          <li><a href="javascript:void(0)">DB削除</a></li>
+          <li><a href="javascript:void(0)">DBリスト作成</a></li>
+          <li class="active"><a href="javascript:void(0)" onclick="post_inquiry()">FAQ・問い合わせ</a></li>
+        </ul>
+      </div>
+      <!--/.nav-collapse -->
+    </div>
+  </nav>
+  <!--　▲ ナビゲーション　 -->
+
+  <div class="qa-list mts">
+    <dl class="qa">
+      <dt>リスト在庫の件数がでてくるのに検索すると0件とでてきます。</dt>
+      <dd>
+        <p>理由①：件数 = ”商材 × カテゴリ × 職種 × 小カテ × エリア × ランク”の数 なので、他の条件は考慮していません。<br>
+          理由②：条件を設定しすぎると出てこないです。例：資本金 × 予算
+        </p>
+      </dd>
+    </dl>
+    <dl class="qa">
+      <dt>通知メッセージが届かないです。</dt>
+      <dd>
+        <p>google chatの設定お願いいたします（
+          <a href="https://docs.google.com/presentation/d/1luLbLf8anBt4dilkZHh7IVcCj99QmFNgL_xYv5v8Wd0/edit?usp=sharing"
+            target="_blank">Google Chat通知設定</a>
+          ）
+        </p>
+      </dd>
+    </dl>
+    <dl class="qa">
+      <dt>商材を選択しても、カテゴリが出てこないです。</dt>
+      <dd>
+        <p>原因解決中です。<br>
+        対処法：イツザイの場合、イツザイ → CMS_EC → イツザイと選択してください。<br>
+        それでも出てこない場合はURLのリロードお願いします。
+        </p>
+      </dd>
+    </dl>
+    <dl class="qa">
+      <dt>新規顧客・既存顧客の違いがわかりません。
+      </dt>
+      <dd>
+        <p>
+          新規顧客：DBにデータを入れるときに、電話番号を初めて登録したリスト<br>
+        既存顧客：DBにデータを入れるときに、電話番号がすでに登録されているリスト<br>
+        媒体名 × 新規顧客で調べると新しく掲載されたリストが確保できるので、アポがとりやすいと思います。（件数は極小）
+        </p>
+      </dd>
+    </dl>
+    <dl class="qa">
+      <dt>APにリストが届かないです。
+      </dt>
+      <dd>
+        <p>
+          送信してからリストが届くまで、ラグが生じます。（１０秒～６０秒）
+        </p>
+      </dd>
+    </dl>
+    <dl class="qa">
+      <dt>届いたリストのすべてのかけ先が架電済だった。
+      </dt>
+      <dd>
+        <p>
+          同時刻に同じ条件で検索すると、そのような事象がおこる可能性があります。<br>
+          また検索して、しばらく時間をおいてから送信すると、架電済みが多くなる可能性が高いです。
+        </p>
+      </dd>
+    </dl>
+  </div>
+
+  <div class="Form">
+    <div class="Form-Item">
+      <p class="Form-Item-Label isMsg"><span class="Form-Item-Label-Required">必須</span>問い合わせ内容</p>
+      <textarea class="Form-Item-Textarea" id="contents"></textarea>
+    </div>
+    <input type="submit" class="Form-Btn" onclick = "push_btn()" value="送信する">
+  </div>
+  <?!= HtmlService.createHtmlOutputFromFile('js_inquiry').getContent(); ?>
+</body>
+
+<footer>
+  <p>Copyright (C)</p>
+</footer>
+
+</html>

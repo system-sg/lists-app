@@ -1,0 +1,805 @@
+<script type="text/javascript">
+  // 読み込んだらフェードアウト
+$(window).load(function () {
+    // 消えるタイミングはお好みで
+    $('.loading').delay(500).fadeOut(300);
+});
+// 10秒待っても読み込みが終わらない時は強制的にローディング画面をフェードアウト
+function stopload(){
+    $('.loading').delay(1000).fadeOut(700);
+}
+setTimeout('stopload()',1000);
+
+//▼ドロップダウンの一覧データを取得する▼
+google.script.run.withSuccessHandler(return_data).get_sheet();
+google.script.run.withSuccessHandler(onGroups).get_group();
+google.script.run.withSuccessHandler(onComplete).get_medium();
+google.script.run.withSuccessHandler(return_url).get_url();
+// google.script.run.withSuccessHandler(onSearched).readRecords2();//テスト
+
+google.script.url.getLocation(function(location) {
+  NAME = location.parameter.name;
+  EMAIL = location.parameter.email;
+});
+
+
+$(function(){
+  google.script.url.getLocation(function(location) {
+    permission_flag = location.parameter.autho;
+    if(permission_flag == "n"){
+      $('#js-modal-open').hide()
+      $('#inquiry_url').hide()
+      $('#db_lst_del').hide()
+      $('#db_lst_making').hide()
+    }
+  });
+});
+
+$(function(){
+    $('#js-modal-open').on('click',function(){
+        $('.js-modal').fadeIn();
+        return false;
+    });
+    $('.js-modal-close').on('click',function(){
+        $('.js-modal').fadeOut();
+        return false;
+    });
+});
+
+
+
+$(document).ready(function() {
+  $('.searched').tablesorter();
+});
+
+$(".searched_container").hide()
+
+function return_data(list){
+  SHEET_SUB_SUB_CATES = JSON.parse(list[0]);
+  SHEET_GROUP = JSON.parse(list[1]);
+  SHEET_ITSZAI = JSON.parse(list[2]);
+  SHEET_CMS_EC = JSON.parse(list[3]);
+}
+
+function return_url(list){
+  INDEX_URL = JSON.parse(list);
+}
+/*----------入力補完-------------*/
+// //入力補完を作成する
+function onComplete(list){
+  let mediums = JSON.parse(list);
+  const autoCompleteJS = new autoComplete({
+    selector: "#autoComplete",
+    placeHolder: "媒体名（任意）",
+    data: {
+        src: mediums,
+        cache: true,
+    },
+    resultsList: {
+      element: (list, data) => {
+          if (!data.results.length) {
+              // Create "No Results" message element
+              const message = document.createElement("div");
+              // Add class to the created element
+              message.setAttribute("class", "no_result");
+              // Add message text content
+              message.innerHTML = `<span>媒体名違います： "${data.query}"</span>`;
+              // Append message element to the results list
+              list.prepend(message);
+          }
+      },
+      noResults: true,
+      maxResults: undefined,
+    },
+    resultItem: {
+      highlight: true
+    },
+    events: {
+      input: {
+        selection: (event) => {
+            const selection = event.detail.selection.value;
+            autoCompleteJS.input.value = selection;
+        }
+      }
+    }
+  });
+ }
+
+
+
+function onGroups(list){   
+  var datas = JSON.parse(list);
+  var html =  "";
+  html += "<select title='組' onChange='change_groups()' id='groups' class='select_push'><option>組を選択</option>";
+  //ドロップダウンの中身の生成
+  for(data of datas){
+    html += "<option>" + data + "</option>"//オプション項目を追加
+  }
+  html += '</select>';//selectタグ終わりを入力
+  //ドロップダウンメニューを設置する
+  document.getElementById("groups").innerHTML = html;  //以下のbody内のidがdropの部分にここで作ったhtmlを追記
+}
+
+/*--------------チェンジ系-------------------*/
+//組を変更したときに発火する
+function change_groups(){
+  //現在選択されてる分類を取得
+  let group = document.getElementById("groups").value
+  // 分類を元にキノコの種類をリビルド
+  if(group == "組を選択してください"){
+    // 何もしない
+  }else{
+    // データを取得する
+    let apnames = []
+    for(let data of SHEET_GROUP){if(data[3] == group) apnames.push(data[0]);}
+    apnames = apnames.filter(function(value, index, self){ return self.indexOf(value) === index;});
+    let html =  "";
+    html += "<select title='AP名前' id='apname' class='select_push'><option>名前を選択</option>";
+    //ドロップダウンの中身の生成
+    for(data of apnames){html += "<option>" + data + "</option>"//オプション項目を追加}
+    html += '</select>';//selectタグ終わりを入力
+    //ドロップダウンメニューを設置する
+    document.getElementById("apname").innerHTML = html;  //以下のbody内のidがdropの部分にここで作ったhtmlを追記
+    }
+  }
+}
+
+//分類を変更したときに発火する
+function change_categories(){
+  //現在選択されてる分類を取得
+  let counterparts = document.getElementById("counterparts").value
+  // 分類を元にキノコの種類をリビルド
+  if(counterparts == "商材を選択してください"){
+    // 何もしない
+  }else{
+    // データを取得する
+    let categories = []
+    for(data of SHEET_SUB_SUB_CATES){if(data[0] == counterparts) categories.push(data[1]);}
+    categories = categories.filter(function(value, index, self){ return self.indexOf(value) === index;});
+    //selectタグの頭を入れる
+    let html =  "";
+    html += "<select title='カテゴリ' onchange='change_sub_categories()' id='categories'><option>カテゴリを選択してください</option>";
+    //ドロップダウンの中身の生成
+    for(data of categories){   //顧客を1人ずつドロップダウンにいれていく。要素数分繰り返し、次が空白になったら脱出
+      if(data == ""){break;}
+      html += "<option>" + data + "</option>"//オプション項目を追加
+    }
+    html += '</select>';//selectタグ終わりを入力
+    //ドロップダウンメニューを設置する
+    document.getElementById("categories").innerHTML = html;  //以下のbody内のidがdropの部分にここで作ったhtmlを追記
+  }
+}
+
+function change_sub_categories(){
+  //現在選択されてる分類を取得
+  let counterparts = document.getElementById("counterparts").value
+  let categories = document.getElementById("categories").value
+  // 分類を元にキノコの種類をリビルド
+  if(categories == "カテゴリを選択してください"){
+    // 何もしない
+  }else{
+    //データを取得する
+    let sub_categories = []
+    for(let data of SHEET_SUB_SUB_CATES){if(data[0] == counterparts & data[1] == categories) sub_categories.push(data[2]);}
+    sub_categories = sub_categories.filter(function(value, index, self){ return self.indexOf(value) === index;});
+    //selectタグの頭を入れる
+    let html =  "";
+    html += "<select title='業種' onchange='change_sub_sub_categories()' id='sub_categories'><option>業種を選択してください</option>";
+    //ドロップダウンの中身の生成
+    for(let data of sub_categories){   //顧客を1人ずつドロップダウンにいれていく。要素数分繰り返し、次が空白になったら脱出
+      if(data == ""){break;}
+      html += "<option>" + data + "</option>"//オプション項目を追加
+    }
+    html += '</select>';//selectタグ終わりを入力
+    //ドロップダウンメニューを設置する
+    document.getElementById("sub_categories").innerHTML = html;  //以下のbody内のidがdropの部分にここで作ったhtmlを追記
+  }
+}
+
+function change_sub_sub_categories(){
+  //現在選択されてる分類を取得
+  let counterparts = document.getElementById("counterparts").value
+  let categories = document.getElementById("categories").value
+  let sub_categories = document.getElementById("sub_categories").value
+  // 分類を元にキノコの種類をリビルド
+  if(sub_categories == "業種を選択してください"){
+    // 何もしない
+  }else{
+    //データを取得する
+    let sub_sub_categories = []
+    for(let data of SHEET_SUB_SUB_CATES){if(data[0] == counterparts & data[1] == categories & data[2] == sub_categories) sub_sub_categories.push(data[3]);}
+    sub_sub_categories = sub_sub_categories.filter(function(value, index, self){ return self.indexOf(value) === index;});
+    //selectタグの頭を入れる
+    var html =  "";
+    html += "<select title='小カテ'id='sub_sub_categories'><option>小カテを選択してください</option>";
+    //ドロップダウンの中身の生成
+    for(let data of sub_sub_categories){   //顧客を1人ずつドロップダウンにいれていく。要素数分繰り返し、次が空白になったら脱出
+      if(data == ""){break;}
+      html += "<option>" + data + "</option>"//オプション項目を追加
+    }
+    html += '</select>';//selectタグ終わりを入力
+    //ドロップダウンメニューを設置する
+    document.getElementById("sub_sub_categories").innerHTML = html;  //以下のbody内のidがdropの部分にここで作ったhtmlを追記
+  }
+}
+
+/*-----------検索ボタン---------------------*/
+function search_check(){
+  //現在選択されてる分類を取得
+  let counterparts = document.getElementById("counterparts").value
+  let categories = document.getElementById("categories").value
+  let sub_categories = document.getElementById("sub_categories").value
+  let sub_sub_categories = document.getElementById("sub_sub_categories").value
+  let prefectures = document.getElementById("prefectures").value
+  let ranks = document.getElementById("ranks").value
+  let medium = document.getElementById("autoComplete").value
+  let capitals = document.getElementById("capitals").value
+  let representative = document.getElementById("representative").value
+  let query = document.getElementById("query").value
+  let hp = document.getElementById("hp").value
+  let contents = document.getElementById("contents").value
+  let genru = document.getElementById("genru").value
+  let seats = document.getElementById("seats").value
+  let budged = document.getElementById("budged").value
+  let emploee = document.getElementById("emploee").value
+  let clients_type = document.getElementById("clients_type").value
+  let facilities = document.getElementById("facilities").value
+  let elements = {}
+  elements.商材 = counterparts;
+  elements.カテゴリ = categories;
+  elements.業種 = sub_categories;
+  elements.小カテ = sub_sub_categories;
+  elements.都道府県 = prefectures;
+  elements.ランク = ranks;
+  elements.顧客タイプ = clients_type;
+  elements.媒体名 = medium;
+  elements.資本金 = capitals;
+  elements.顧客タイプ = clients_type;
+  elements.席数 = seats;
+  elements.予算 = budged;
+  elements.従業員数 = emploee;
+  elements.施設数 = facilities;
+  elements.代表者 = representative;
+  elements.クエリ = query;
+  elements.HP = hp;
+  elements.内容 = contents;
+  elements.ジャンル = genru;
+
+  if(counterparts == "商材を選択してください" | 
+    categories == "カテゴリを選択してください" | 
+    sub_categories == "業種を選択してください" | 
+    sub_sub_categories == "小カテを選択してください" | 
+    prefectures == "" | 
+    ranks == ""
+    ){
+      swal("必須項目は入力してね");
+  }else{
+    // データを取得する
+    const error = [];
+    let medium = elements["媒体名"];
+    let value_cunparts = elements.商材 == "イツザイ" ? SHEET_ITSZAI : SHEET_CMS_EC
+    let values_num = 0
+    let area_num = (elements.都道府県 == "既存エリア" | elements.都道府県 == "エリア外"　| elements.都道府県 == "指定なし") ? 4 : 5
+
+    for(let value of value_cunparts){
+      if(value[0] == elements.カテゴリ &
+        value[1] == elements.業種 &
+        value[2] == elements.小カテ &
+        value[3] == elements.ランク &
+        value[area_num] == elements.都道府県 ){
+        values_num += Number(value[7]);
+      }
+    }
+
+    if(!error.length) {
+      swal(`検索しますか？\nリスト在庫：${values_num}件`, {
+        buttons: {
+          cancel: "いいえ",
+          catch: {
+            text: "はい",
+            value: "catch",
+          }
+        }
+      })
+      .then((value) => {
+        switch (value) {
+          case "cancel":
+            break;
+      
+          case "catch":
+            if(Number(values_num) > 11){
+              $(".searched_container").hide()
+              notie.alert({ type: 1, text: '検索中', stay: true, position: 'bottom'});
+              document.getElementById('js-modal-close').click();
+              google.script.run.withSuccessHandler(onSearched).readRecords(elements, EMAIL);
+              break;
+            }
+            else{
+              swal({
+                  title: "在庫過小",
+                  text: "本当に検索しますか？",
+                  icon: "warning",
+                  buttons: {
+                    cancel: "いいえ",
+                    catch: {
+                      text: "はい",
+                      value: "catch",
+                    }
+                  }
+                })
+
+                .then((value) => {
+                  switch (value) {
+                    case "cancel":
+                      break;
+
+                  case "catch":
+                    $(".searched_container").hide()
+                    notie.alert({ type: 1, text: '検索中', stay: true, position: 'bottom'});
+                    document.getElementById('js-modal-close').click();
+                    google.script.run.withSuccessHandler(onSearched).readRecords(elements, EMAIL);
+                    break;
+
+                  }
+                });
+
+            }
+        }
+      });
+
+    }else {
+      swal(error.join(" "))
+    }
+  }
+}
+
+function post_index(){
+  let form = document.createElement('form');
+  let request = document.createElement('input');
+  let url = `${INDEX_URL}?name=${NAME}&email=${EMAIL}&p=index`
+  form.method = 'POST';
+  form.action = url;
+  request.type = 'hidden'; //入力フォームが表示されないように
+  request.name = 'text';
+  request.value = "";
+  form.appendChild(request);
+  document.body.appendChild(form);
+  form.submit();
+}
+
+function post_inquiry(){
+  let form = document.createElement('form');
+  let request = document.createElement('input');
+  let url = `${INDEX_URL}?name=${NAME}&email=${EMAIL}&p=inquiry`
+  form.method = 'POST';
+  form.action = url;
+  request.type = 'hidden'; //入力フォームが表示されないように
+  request.name = 'text';
+  request.value = "";
+  form.appendChild(request);
+  document.body.appendChild(form);
+  form.submit();
+}
+
+// 検索結果
+function onSearched(list){
+  $(".searched_container").show()
+  let datas = JSON.parse(list);//dataをJSONに変換
+  let html =  "";
+  html += `<table border="1" cellspacing="1" align="center" class="searched" id="searched">`;
+  for(let i in datas){
+    if(i==0){
+      html += `<thead>`
+      html += `<tr>`
+      for(let j in datas[i]){
+        html += `<th>${datas[i][j]}</th>`
+      }
+      html += `</tr>`
+      html += `</thead>`
+      html += `<tbody>`
+    }
+    else{
+      html += `<tr>`
+      for(let j in datas[i]){
+        html += `<td>${datas[i][j]}</td>`
+      }
+      html += `</tr>`
+    }
+  }
+  html += '</tbody>';
+  html += '</table>';
+
+  var elem = document.getElementById('searched');
+  if (elem.hasChildNodes()) {
+    $("#searched").DataTable().destroy();
+    $('#searched').empty();
+  }
+  
+  //ドロップダウンメニューを設置する
+  document.getElementById("searched").innerHTML = html;  //以下のbody内のidがdropの部分にここで作ったhtmlを追記
+  $("#searched").DataTable({
+    // 件数切替機能 無効
+    lengthChange: true,
+    // 検索機能 無効
+    searching: false,
+    // ソート機能 無効
+    ordering: true,
+    // 情報表示 無効
+    info: false,
+    // ページング機能 無効
+    paging: true,
+    language: {
+      "decimal": ".",
+      "thousands": ",",
+      "sProcessing": "処理中...",
+      "sLengthMenu": "_MENU_ 件表示",
+      "sZeroRecords": "データはありません。",
+      "sInfo": " _TOTAL_ 件中 _START_ から _END_ まで表示",
+      "sInfoEmpty": " 0 件中 0 から 0 まで表示",
+      "sInfoFiltered": "（全 _MAX_ 件より抽出）",
+      "sInfoPostFix": "",
+      "sSearch": "検索:",
+      "sUrl": "",
+      "oPaginate": {
+      "sFirst": "先頭",
+      "sPrevious": "前",
+      "sNext": "次",
+      "sLast": "最終"
+      }
+    },
+    lengthMenu: [ 50, 100, 200 ]
+  });
+  swal("検索完了");
+  notie.hideAlerts()
+}
+
+
+function postForm() {
+    var form = document.createElement('form');
+    var request = document.createElement('input');
+    form.method = 'POST';
+    form.action = `${INDEX_URL}`;
+    request.type = 'hidden'; //入力フォームが表示されないように
+    request.name = 'text';
+    request.value = "";
+    form.appendChild(request);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function post_table(){
+  //現在選択されてる分類を取得
+  let group = document.getElementById("groups").value
+  let apname = document.getElementById("apname").value
+  // 分類を元にキノコの種類をリビルド
+  if(group == "組を選択" | apname == "名前を選択"){
+    swal("組と名前を選択してください");
+  }else if($(".searched_container").is(":hidden")){
+    swal("リストがありません");
+  }else{
+    swal("配布しますか？", {
+      buttons: {
+        cancel: "いいえ",
+        catch: {
+          text: "はい",
+          value: "catch",
+        }
+      }
+    })
+    .then((value) => {
+      switch (value) {
+        case "cancel":
+          break;
+    
+        case "catch":
+          let table_data;
+          $(".searched_container").hide()
+          swal({
+            text: "配布したよ！（ラグ60秒）",
+            icon: "success",
+          });
+          table_data = readTableRecords()
+          columns_data = getColumnsData()
+          google.script.run.withSuccessHandler(onSended).sendRecords(group, apname, table_data, columns_data);
+          break;
+      }
+    });
+    //データを取得する
+  }
+}
+
+
+function getColumnsData(){
+  let counterparts = document.getElementById("counterparts").value
+  let categories = document.getElementById("categories").value
+  let sub_categories = document.getElementById("sub_categories").value
+  let sub_sub_categories = document.getElementById("sub_sub_categories").value
+  let prefectures = document.getElementById("prefectures").value
+  let ranks = document.getElementById("ranks").value
+  let medium = document.getElementById("autoComplete").value
+  let capitals = document.getElementById("capitals").value
+  let representative = document.getElementById("representative").value
+  let query = document.getElementById("query").value
+  let hp = document.getElementById("hp").value
+  let contents = document.getElementById("contents").value
+  let genru = document.getElementById("genru").value
+  let seats = document.getElementById("seats").value
+  let budged = document.getElementById("budged").value
+  let emploee = document.getElementById("emploee").value
+  let clients_type = document.getElementById("clients_type").value
+  let facilities = document.getElementById("facilities").value
+  let group = document.getElementById("groups").value
+  let apname = document.getElementById("apname").value
+  let elements = {}
+  elements.送信者 = NAME;
+  elements.メールアドレス = EMAIL;
+  elements.組 = group;
+  elements.氏名 = apname;
+  elements.商材 = counterparts;
+  elements.カテゴリ = categories;
+  elements.業種 = sub_categories;
+  elements.小カテ = sub_sub_categories;
+  elements.都道府県 = prefectures;
+  elements.ランク = ranks;
+  elements.顧客タイプ = clients_type;
+  elements.媒体名 = medium;
+  elements.資本金 = capitals;
+  elements.席数 = seats;
+  elements.予算 = budged;
+  elements.従業員数 = emploee;
+  elements.施設数 = facilities;
+  elements.代表者 = representative;
+  elements.クエリ = query;
+  elements.HP = hp;
+  elements.内容 = contents;
+  elements.ジャンル = genru;
+  elements_lst = Object.values(elements)
+  return elements_lst
+}
+
+function readTableRecords(){
+  // table要素を取得
+  var mytable = document.getElementById('searched');
+  var htmlStr = [];
+
+  for (var i=0; i < mytable.rows.length; i++) {
+    for (var j=0; j < mytable.rows[i].cells.length; j++) {
+      let value = mytable.rows[i].cells[j].outerHTML.toString();
+      value = value.replace(/<th(.+)">|<th>|<\/th>|<td>|<td(.+)">|<\/td>/g,"");
+      htmlStr.push({"行": i, "列": j, value});
+    }
+  }
+  return htmlStr
+}
+
+function onSended(list){
+  
+}
+
+function onSearchFile(){
+  swal({
+    content: {
+      element: "input",
+      attributes: {
+        placeholder: "Type File ID",
+        type: "number",
+      },
+    },
+  })
+
+  .then((value) => {
+    switch (value) {
+      case null:
+        break;
+      
+      case "":
+        break;
+
+      default:
+        swal({
+            text: `${value}であってますか？`,
+            buttons: {
+              cancel: "いいえ",
+              catch: {
+                text: "検索",
+                value: value,
+              }
+            }
+          })
+
+          .then((value) => {
+            switch (value) {
+              case "cancel":
+                break;
+
+              default:
+                notie.alert({ type: 1, text: '検索中', stay: true, position: 'bottom'});
+                google.script.run.withSuccessHandler(onSearchedFileId).searchFilesID(value);
+                break;
+                }
+            });
+    }
+  });
+}
+
+function getFilesData(){
+  let counterparts = document.getElementById("counterparts").value
+  let categories = document.getElementById("categories").value
+  let sub_categories = document.getElementById("sub_categories").value
+  let sub_sub_categories = document.getElementById("sub_sub_categories").value
+  let prefectures = document.getElementById("prefectures").value
+  let ranks = document.getElementById("ranks").value
+  let medium = document.getElementById("autoComplete").value
+  let capitals = document.getElementById("capitals").value
+  let representative = document.getElementById("representative").value
+  let query = document.getElementById("query").value
+  let hp = document.getElementById("hp").value
+  let contents = document.getElementById("contents").value
+  let genru = document.getElementById("genru").value
+  let seats = document.getElementById("seats").value
+  let budged = document.getElementById("budged").value
+  let emploee = document.getElementById("emploee").value
+  let clients_type = document.getElementById("clients_type").value
+  let facilities = document.getElementById("facilities").value
+  let group = document.getElementById("groups").value
+  let apname = document.getElementById("apname").value
+  let elements = {}
+  elements.送信者 = NAME;
+  elements.商材 = counterparts;
+  elements.カテゴリ = categories;
+  elements.業種 = sub_categories;
+  elements.小カテ = sub_sub_categories;
+  elements.都道府県 = prefectures;
+  elements.ランク = ranks;
+  elements.顧客タイプ = clients_type;
+  elements.媒体名 = medium;
+  elements.資本金 = capitals;
+  elements.席数 = seats;
+  elements.予算 = budged;
+  elements.従業員数 = emploee;
+  elements.施設数 = facilities;
+  elements.代表者 = representative;
+  elements.クエリ = query;
+  elements.HP = hp;
+  elements.内容 = contents;
+  elements.ジャンル = genru;
+  elements_lst = Object.values(elements)
+  return elements_lst
+}
+
+/*-----------file_idを作成する---------------------*/
+function createFileId(){
+  //現在選択されてる分類を取得
+  let counterparts = document.getElementById("counterparts").value
+  let categories = document.getElementById("categories").value
+  let sub_categories = document.getElementById("sub_categories").value
+  let sub_sub_categories = document.getElementById("sub_sub_categories").value
+  let prefectures = document.getElementById("prefectures").value
+  let ranks = document.getElementById("ranks").value
+  let medium = document.getElementById("autoComplete").value
+  let capitals = document.getElementById("capitals").value
+  let representative = document.getElementById("representative").value
+  let query = document.getElementById("query").value
+  let hp = document.getElementById("hp").value
+  let contents = document.getElementById("contents").value
+  let genru = document.getElementById("genru").value
+  let seats = document.getElementById("seats").value
+  let budged = document.getElementById("budged").value
+  let emploee = document.getElementById("emploee").value
+  let clients_type = document.getElementById("clients_type").value
+  let facilities = document.getElementById("facilities").value
+  let elements = {}
+  elements.商材 = counterparts;
+  elements.カテゴリ = categories;
+  elements.業種 = sub_categories;
+  elements.小カテ = sub_sub_categories;
+  elements.都道府県 = prefectures;
+  elements.ランク = ranks;
+  elements.顧客タイプ = clients_type;
+  elements.媒体名 = medium;
+  elements.資本金 = capitals;
+  elements.席数 = seats;
+  elements.予算 = budged;
+  elements.従業員数 = emploee;
+  elements.施設数 = facilities;
+  elements.代表者 = representative;
+  elements.クエリ = query;
+  elements.HP = hp;
+  elements.内容 = contents;
+  elements.ジャンル = genru;
+
+  if(counterparts == "商材を選択してください" | 
+    categories == "カテゴリを選択してください" | 
+    sub_categories == "業種を選択してください" | 
+    sub_sub_categories == "小カテを選択してください" | 
+    prefectures == "" | 
+    ranks == ""
+    ){
+      swal("必須項目は入力してね");
+  }else{
+    // データを取得する
+    const error = [];
+    let medium = elements["媒体名"];
+    let value_cunparts = elements.商材 == "イツザイ" ? SHEET_ITSZAI : SHEET_CMS_EC
+    let values_num = 0
+    let area_num = (elements.都道府県 == "既存エリア" | elements.都道府県 == "エリア外"　| elements.都道府県 == "指定なし") ? 4 : 5
+
+    for(let value of value_cunparts){
+      if(value[0] == elements.カテゴリ &
+        value[1] == elements.業種 &
+        value[2] == elements.小カテ &
+        value[3] == elements.ランク &
+        value[area_num] == elements.都道府県 ){
+        values_num += Number(value[7]);
+      }
+    }
+
+    if(!error.length) {
+      swal({
+          title: "検索ID発行しますか？",
+          text: `リスト在庫：${values_num}件`,
+          icon: "warning",
+          buttons: {
+            cancel: "いいえ",
+            catch: {
+              text: "はい",
+              value: "catch",
+            }
+          }
+        })
+      .then((value) => {
+        switch (value) {
+          case "cancel":
+            break;
+      
+          case "catch":
+            let id = String(new Date().getTime());
+            swal({
+              title: "コピーしてください",
+              text: `${id}`
+            });
+            columns_data = getFilesData();
+            google.script.run.withSuccessHandler(onSended).sendFileId(id, columns_data);
+        }
+      });
+
+    }else {
+      swal(error.join(" "))
+    }
+  }
+}
+
+
+function onSearchedFileId(list){
+  let elements = JSON.parse(list);//dataをJSONに変換
+  if(elements){
+    document.getElementById("counterparts").value = elements.商材;
+    change_categories();
+    document.getElementById("categories").value = elements.カテゴリ;
+    change_sub_categories();
+    document.getElementById("sub_categories").value = elements.業種;
+    change_sub_sub_categories();
+    document.getElementById("sub_sub_categories").value = elements.小カテ;
+    document.getElementById("prefectures").value = elements.都道府県;
+    document.getElementById("ranks").value = elements.ランク;
+    document.getElementById("autoComplete").value = elements.媒体名;
+    document.getElementById("capitals").value = elements.資本金;
+    document.getElementById("representative").value = elements.代表者;
+    document.getElementById("query").value = elements.クエリ;
+    document.getElementById("hp").value = elements.HP;
+    document.getElementById("contents").value = elements.内容;
+    document.getElementById("genru").value = elements.ジャンル;
+    document.getElementById("seats").value = elements.席数;
+    document.getElementById("budged").value = elements.予算;
+    document.getElementById("emploee").value = elements.従業員数;
+    document.getElementById("clients_type").value = elements.顧客タイプ;
+    document.getElementById("facilities").value = elements.施設数;
+    google.script.run.withSuccessHandler(onSearched).readRecords(elements, EMAIL);
+  }
+  else{
+    swal("検索ID見つかりませんでした。")
+  }
+}
+
+
+</script>

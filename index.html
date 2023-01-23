@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- jQueryのライブラリ類を読み込む -->
+  <!--CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+  <!--JS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <!-- 入力補完 -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/css/autoComplete.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"></script>
+  <!-- sweet alert -->
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <!-- バナー通知 -->
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
+  <script src="https://unpkg.com/notie"></script>
+  <base target="_top">
+  <!-- fontawesome -->
+  <script src="https://kit.fontawesome.com/9f02d6923b.js" crossorigin="anonymous"></script>
+  <!-- datatables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/t/bs-3.3.6/jqc-1.12.0,dt-1.10.11/datatables.min.css" />
+  <script src="https://cdn.datatables.net/t/bs-3.3.6/jqc-1.12.0,dt-1.10.11/datatables.min.js"></script>
+  <!-- デスクトップ通知 -->
+  <?!= HtmlService.createHtmlOutputFromFile('css').getContent(); ?>
+  <title>APリスト配布アプリ</title>
+  <base target="_top">
+</head>
+
+<body>
+  <!--　▼ ローディング画面 -->
+  <div class="loading" id="loading">
+    <div class="loading_action" id="loading_action">
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+      <div class="loading-bar"></div>
+    </div>
+  </div>
+  <!--　▲ ローディング画面 -->
+
+  <!--　▼ ジャンボトロン　 -->
+  <div class="jumbotron">
+    <div class="container_head">
+      <h1>
+        <font size="5"></font>
+      </h1>
+    </div>
+  </div>
+  <!--　▲ ジャンボトロン　 -->
+
+  <!--　▼ ナビゲーション　 -->
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        <a class="navbar-brand" href="javascript:void(0)">SUNGROVE</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="javascript:void(0)" onclick="post_index()">DBリスト配布</a></li>
+          <li><a href="javascript:void(0)" id="db_lst_del">DB削除</a></li>
+          <li><a href="javascript:void(0)" id="db_lst_making">DBリスト作成</a></li>
+          <li><a href="javascript:void(0)" onclick="post_inquiry()" id="inquiry_url">FAQ・問い合わせ</a></li>
+        </ul>
+      </div>
+      <!--/.nav-collapse -->
+    </div>
+  </nav>
+  <!--　▲ ナビゲーション　 -->
+
+  <div id="loader">
+    <div class="spinner">
+      <div class="cube1"></div>
+      <div class="cube2"></div>
+    </div>
+  </div>
+
+  <!-- アカウント表示 -->
+  <div class="accounts" id="accounts" for="check-a">
+    <i class="fa-solid fa-circle-user fa-2x" style="color: #005FFF;"></i>
+    <div class="account_text" style="text-decoration: underline"><span id="name"><?= name ?> さん</span>
+      <div class="description1"><span id="email"><?= email ?></span></div>
+    </div>
+  </div>
+
+  </div>
+
+  <div class="s_view">
+    <div class="s_view_border">
+      <!--　▼ モーダルウィンドウ -->
+      <div class="content">
+        <a href="javascript:void(0)" class="js-modal-open" id="js-modal-open">
+          <i class="fa-solid fa-magnifying-glass fa-2x" style="color: #000;"></i>検索条件
+        </a>
+        <a href="javascript:void(0)" class="js-modal-open" id="search-file-id" onclick="onSearchFile()">
+          <i class="fa-solid fa-pen-to-square fa-2x" style="color: #000;"></i>ID検索
+        </a>
+      </div>
+
+
+      <!--　▲ モーダルウィンドウ -->
+
+      <div class="modal js-modal">
+        <div class="modal__bg js-modal-close"></div>
+        <div class="modal__content">
+          <div class="btn_search_close">
+            <a class="js-modal-close" id="js-modal-close" href=""><i class="fa-solid fa-xmark fa-2x"></i></a>
+          </div>
+          <table cellspacing="0" align="center" class="selections">
+            <tbody>
+              <tr>
+                <th class="required">商材</th>
+                <td class="required_td">
+                  <!-- <select  id="counterparts" onchange='change_categories()'></select> -->
+                  <select title='商材' onChange='change_categories()' id='counterparts' class="required_select">
+                    <option>商材を選択してください</option>
+                    <option>イツザイ</option>
+                    <option>CMS_EC</option>
+                  </select>
+                </td>
+
+                <th class="required">   
+                  <div class="tooltip1">エリア<br>都道府県
+                    <div class="description1">※指定なしは47都道府県ではありません。<br>例：携帯など</div>
+                  </div>
+                </th>
+                
+                <td class="required_td">
+                  <select class="required_select" id="prefectures">
+                    <option value="">エリア・都道府県を選択</option>
+                    <optgroup label="エリア">
+                      <option value="既存エリア">既存エリア</option>
+                      <option value="エリア外">エリア外</option>
+                      <option value="指定なし">指定なし</option>
+                    </optgroup>
+                    <optgroup label="都道府県">
+                      <option value="北海道">北海道</option>
+                      <optgroup label="東北">
+                        <option value="青森県">青森県</option>
+                        <option value="秋田県">秋田県</option>
+                        <option value="岩手県">岩手県</option>
+                        <option value="山形県">山形県</option>
+                        <option value="宮城県">宮城県</option>
+                        <option value="福島県">福島県</option>
+                      </optgroup>
+                      <optgroup label="関東">
+                        <option value="茨城県">茨城県</option>
+                        <option value="栃木県">栃木県</option>
+                        <option value="群馬県">群馬県</option>
+                        <option value="埼玉県">埼玉県</option>
+                        <option value="千葉県">千葉県</option>
+                        <option value="東京都">東京都</option>
+                        <option value="神奈川県">神奈川県</option>
+                      </optgroup>
+                      <optgroup label="中部">
+                        <option value="新潟県">新潟県</option>
+                        <option value="富山県">富山県</option>
+                        <option value="石川県">石川県</option>
+                        <option value="福井県">福井県</option>
+                        <option value="山梨県">山梨県</option>
+                        <option value="長野県">長野県</option>
+                        <option value="岐阜県">岐阜県</option>
+                        <option value="静岡県">静岡県</option>
+                        <option value="愛知県">愛知県</option>
+                      </optgroup>
+                      <optgroup label="近畿">
+                        <option value="三重県">三重県</option>
+                        <option value="滋賀県">滋賀県</option>
+                        <option value="京都府">京都府</option>
+                        <option value="大阪府">大阪府</option>
+                        <option value="兵庫県">兵庫県</option>
+                        <option value="奈良県">奈良県</option>
+                        <option value="和歌山県">和歌山県</option>
+                      </optgroup>
+                      <optgroup label="中国">
+                        <option value="岡山県">岡山県</option>
+                        <option value="広島県">広島県</option>
+                        <option value="鳥取県">鳥取県</option>
+                        <option value="島根県">島根県</option>
+                        <option value="山口県">山口県</option>
+                      </optgroup>
+                      <optgroup label="四国">
+                        <option value="徳島県">徳島県</option>
+                        <option value="香川県">香川県</option>
+                        <option value="愛媛県">愛媛県</option>
+                        <option value="高知県">高知県</option>
+                      </optgroup>
+                      <optgroup label="九州沖縄">
+                        <option value="福岡県">福岡県</option>
+                        <option value="佐賀県">佐賀県</option>
+                        <option value="長崎県">長崎県</option>
+                        <option value="熊本県">熊本県</option>
+                        <option value="大分県">大分県</option>
+                        <option value="宮崎県">宮崎県</option>
+                        <option value="鹿児島県">鹿児島県</option>
+                        <option value="沖縄県">沖縄県</option>
+                      </optgroup>
+                    </optgroup>
+                  </select>
+                </td>
+
+                <th>従業員数</th>
+                <td>
+                  <select id="emploee">
+                  <option value="">選択なし</option>
+                  <option value="1~5">1~5人</option>
+                  <option value="5~10">5~10人</option>
+                  <option value="10~20">10~20人</option>
+                  <option value="20~30">20~30人</option>
+                  <option value="30~50">30~50人</option>
+                  <option value="50~100">50~100人</option>
+                  </select>
+                </td>
+
+                <th>
+                  <div class="tooltip1">席数<br>部屋数
+                    <div class="description1">※セット面・ベット台数・ユニット台数・診療台数・客室数・機械台数を含む </div>
+                  </div>
+                </th>
+                <td><select id="seats">
+                  <option value="">選択なし</option>
+                  <option value="1~20">1~20席</option>
+                  <option value="20~50">20~50席</option>
+                  <option value="50~100">50~100席</option>
+                  </select>
+                </td>
+
+                <th rowspan="5">
+                  <div class="tooltip1">必須カラム
+                    <div class="description1">※右の選択項目をありにすると、必ずそのカラムに値が入るリストが抽出されます。</div>
+                  </div>
+                </th>
+                <td rowspan="5">
+                  <label>代表者名</label>
+                  <select id="representative">
+                    <option value="">選択なし</option>
+                    <option>あり</option>
+                  </select>
+                  <br>
+
+                  <label>クエリ</label>
+                  <select id="query">
+                    <option value="">選択なし</option>
+                    <option>あり</option>
+                  </select>
+                  <br>
+
+                  <label>HP</label>
+                  <select id="hp">
+                    <option value="">選択なし</option>
+                    <option>あり</option>
+                  </select>
+                  <br>
+
+                  <label>内容</label>
+                  <select id="contents">
+                    <option value="">選択なし</option>
+                    <option>あり</option>
+                  </select>
+                  <br>
+
+                  <label>ジャンル</label>
+                  <select id="genru">
+                    <option value="">選択なし</option>
+                    <option>あり</option>
+                  </select>
+                </td>
+              </tr>
+
+              <tr>
+                <th class="required">カテゴリ</th>
+                <td class="required_td">
+                  <select id="categories" class="required_select" onchange='change_sub_categories()'></select>
+                </td>
+
+                <th class="required">ランク</th>
+                <td class="required_td">
+                  <select class="required_select" id="ranks">
+                    <option value="">ランクを選択してください</option>
+                    <option>S</option>
+                    <option>A</option>
+                    <option>B</option>
+                  </select>
+                </td>
+
+                <th>店舗数<br>施設数</th>
+                <td>
+                  <select id="facilities">
+                  <option value="">選択なし</option>
+                  <option value="1~2">1~2</option>
+                  <option value="2~3">2~3</option>
+                  <option value="3~5">3~5</option>
+                  <option value="5~10">5~10</option>
+                  </select>
+                </td>
+
+                <th></th>
+                <td></td>
+
+              </tr>
+              <tr>
+                <th class="required">職種</th>
+                <td class="required_td">
+                  <select id="sub_categories" class="required_select" onchange='change_sub_sub_categories()'></select>
+                </td>
+
+                <th><label for="jquery-ui-autocomplete-label">媒体名</label></th>
+                <td><input id="autoComplete" class="medium" type="search" dir="ltr" spellcheck=false autocorrect="off" autocomplete="off" autocapitalize="off">
+                </td>
+
+                <th>予算</th>
+                <td>
+                  <select id="budged">
+                  <option value="">選択なし</option>
+                  <option value="1~3000">1~3000円</option>
+                  <option value="3000~5000">3000~5000円</option>
+                  <option value="5000~7000">5000~7000円</option>
+                  <option value="7000~10000">7000~10000円</option>
+                  <option value="10000~20000">10000~20000円</option>
+                  <option value="20000~40000">20000~40000円</option>
+                  </select>
+                </td>
+
+                <th></th>
+                <td></td>
+
+              </tr>
+
+              <tr>
+                <th class="required">小カテ</th>
+                <td class="required_td"><select id="sub_sub_categories" class="required_select"></select></td>
+
+                <th>
+                  <div class="tooltip1">顧客タイプ
+                    <div class="description1">新規顧客：新しく掲載された架け先<br>既存顧客：すでに登録しているかけ先</div>
+                  </div>
+                </th>
+                <td>
+                  <select id="clients_type">
+                  <option value="">選択なし</option>
+                  <option>新規顧客</option>
+                  <option>既存顧客</option>
+                  </select>
+                </td>
+
+                <th>資本金</th>
+                <td><select id="capitals">
+                  <option value="">選択なし</option>
+                  <option value="1~3000000">1~300万円</option>
+                  <option value="3000000~5000000">300~500万円</option>
+                  <option value="5000000~10000000">500~1000万円</option>
+                  <option value="10000000~30000000">1000~3000万円</option>
+                  <option value="30000000~50000000">3000~5000万円</option>
+                  </select>
+                </td>
+
+                <th></th>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="btn_search_list">
+            <div class="btn_search1">
+              <button class="btn btn-primary btn-lg" onclick="createFileId()">ID発行</button>
+            </div>
+            <div class="btn_search2">
+              <button class="btn btn-primary btn-lg" onclick="search_check()">検索</button>
+            </div>
+          </div>
+
+
+        </div>
+        <!--modal__inner-->
+      </div>
+
+
+    <div class="searched_container1">
+      <div class="serach_label">
+        <h2>検索結果</h2>
+      </div>
+
+
+      <select title='組' onChange='change_groups()' id='groups' class='select_push'>
+      </select>
+
+      <select title='AP名前' id='apname' class='select_push'>
+      </select>
+
+      <div class="push_btn">
+        <a class="js-modal-open2"
+          onclick="post_table()"><i class="fa-solid fa-paper-plane" style="color: #000;"></i>配布</a>
+      </div>
+
+      <div class="searched_container">
+        <table border="1" cellspacing="1" align="center" class="searched" id="searched"></table>
+      </div>
+    </div>
+    </div>
+  
+  </div>
+
+  <?!= HtmlService.createHtmlOutputFromFile('js').getContent(); ?>
+</body>
+
+<footer>
+  <p>Copyright (C)</p>
+</footer>
+
+</html>
