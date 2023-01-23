@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+ <head>
+   <base target="_top">
+   <?!= HtmlService.createHtmlOutputFromFile('css').getContent(); ?>
+  <!-- sweet alert -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+  <!-- バナー通知 -->
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
+  <script src="https://unpkg.com/notie"></script>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+ </head>
+ <body>
+   <div class="form-wrapper">
+     <h1>新規登録</h1>
+      <div class="form-item">
+        <label for="mailaddress"></label>
+        <input id="mailaddress" type="mailaddress" name="mailaddress" required="required" placeholder="メールアドレス"></input>
+      </div>
+      <div class="form-item">
+        <label for="password"></label>
+        <input id="password" type="password" name="password" required="required" placeholder="パスワード"></input>
+      </div>
+      <div class="form-item">
+        <label for="Account_name"></label>
+        <input id="Account_name" type="Account_name" name="Account_name" required="required" placeholder="ビジネスネーム"></input>
+      </div>
+      <div class="form-item">
+        <label for="permission_password"></label>
+        <input id="permission_password" type="permission_password" name="permission_password" placeholder="管理者パスワード（管理者のみ）"></input>
+      </div>
+      <div class="button-panel">
+        <button onclick="login_check()" class="button" title="Login" value="Login">新規登録</button>
+      </div>
+      <div class="login">
+        <a href="javascript:void(0)" onclick="post_index()">ログイン画面に戻る</a>
+      </div>
+   </div>
+   <?!= HtmlService.createHtmlOutputFromFile('js').getContent(); ?>
+ </body>
+</html>

@@ -1,0 +1,43 @@
+<script type="text/javascript">
+google.script.run.withSuccessHandler(return_url).get_url();
+
+/*--------------チェンジ系-------------------*/
+function login_check(){
+  //現在選択されてる分類を取得
+  let mailaddress = document.getElementById("mailaddress").value
+  let password = document.getElementById("password").value
+  let account_name = document.getElementById("Account_name").value
+  let permission_password = document.getElementById("permission_password").value
+  // 分類を元にキノコの種類をリビルド
+  if(mailaddress == "" | password == "" | account_name == ""){
+    swal("メールアドレス・パスワード・アカウント名入力してね")
+  }
+  else if(permission_password != "sunsunsungrove" && permission_password != ""){
+    swal("管理者パスワード違うよ。（入力するか空白にしてね）")
+  }
+  else{
+    // データを取得する
+    notie.alert({ type: 1, text: '新規登録中',time: 1});
+    permission_password = permission_password == "sunsunsungrove" ? "g" : "n"
+    google.script.run.withSuccessHandler(onAccounts).createAccounts(mailaddress, password, account_name, permission_password);
+  }
+}
+
+function onAccounts(list){   
+  let error = JSON.parse(list);
+  if (!error.length) {
+    window.top.location.href = INDEX_URL
+  } else {
+    swal(error.join(" "))
+  }
+}
+
+function return_url(list){
+  INDEX_URL = JSON.parse(list);
+}
+
+function post_index(){
+  window.top.location.href = INDEX_URL
+}
+
+</script>
